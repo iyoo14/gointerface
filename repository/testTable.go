@@ -1,5 +1,9 @@
 package repository
 
+import (
+	"github.com/iyoo14/pqlap"
+)
+
 func SelectTmpTable() bool {
 	logger.Println("start selectTmpTable.")
 	sql := `select id, name from tmp_table`
@@ -17,17 +21,19 @@ func InsertTestTable(record []interface{}) bool {
 	sql := `insert into test_table
 (id, name) values
 ($1, $2)`
-	con.Prepare(sql)
-	if con.Error() {
+	icon := pqlap.DbInstantConnection(cfg.Dsn)
+	defer icon.Close()
+	icon.Prepare(sql)
+	if icon.Error() {
 		logger.Println("prepare error.", sql)
-		logger.Println(con.GetError())
+		logger.Println(icon.GetError())
 		logger.Println(record)
 		return false
 	}
-	con.Exec(record)
+	icon.Exec(record)
 	if con.Error() {
 		logger.Println("exec error.", sql)
-		logger.Println(con.GetError())
+		logger.Println(icon.GetError())
 		logger.Println(record)
 		return false
 	}

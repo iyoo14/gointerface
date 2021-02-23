@@ -1,6 +1,7 @@
 package main
 
 import (
+	"database/sql"
 	"github.com/iyoo14/gologger"
 	"github.com/iyoo14/pqlap"
 	"gointerface/repository"
@@ -50,28 +51,29 @@ func main() {
 			wg.Done()
 			continue
 		}
-		go func(i int) {
+		go func(i int, tg *sql.Rows) {
+			time.Sleep(time.Duration(i*500) * time.Microsecond)
 			limit <- struct{}{}
 			var id interface{}
 			var name interface{}
-			err := targetRows.Scan(&id, &name)
+			err := tg.Scan(&id, &name)
 			defer wg.Done()
 			defer func() {
 				<-limit
 			}()
 			if err != nil {
-				logger.Printf("error rows: %v\n", err)
+				logger.Fatal("error rows:", err)
 			}
 			var record []interface{}
 			record = append(record, id)
 			record = append(record, name)
 			repository.InsertTestTable(record)
 			if err != nil {
-				logger.Printf("error rows: %v\n", err)
+				logger.Fatal("error insert:", err)
 			}
 			logger.Println("func ", i)
-		}(id)
-		time.Sleep(200 * time.Millisecond)
+		}(id, targetRows)
+		wg.Wait()
 	}
-	wg.Wait()
+
 }

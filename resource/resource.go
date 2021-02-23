@@ -10,9 +10,9 @@ import (
 
 var logger *gologger.Logger
 var con *pqlap.Db
-var cfg config
+var cfg Config
 
-type config struct {
+type Config struct {
 	Dsn    string `json:"dsn"`
 	Suffix string `json:suffix`
 }
@@ -42,6 +42,6 @@ func SetConfig(jsonPath string) {
 	err = json.NewDecoder(f).Decode(&cfg)
 }
 
-func GetConfig() config {
+func GetConfig() Config {
 	return cfg
 }
